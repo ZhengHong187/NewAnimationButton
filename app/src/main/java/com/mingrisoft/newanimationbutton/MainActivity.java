@@ -63,8 +63,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         
         
         for (int i = 0; i < NUM_OF_SIDES; i++) {
-            pentagonVertices[i] = new Point((int) ((rotation   )),
-                    (int) (rotation + lineHeight*i*(-10)) );
+            pentagonVertices[i] = new Point((int) ((rotation + lineHeight  )),
+                    (int) (rotation + lineHeight) + (i*(120)));
         }
         buttons = new Button[pentagonVertices.length];
         for (int i = 0; i < buttons.length; i++) {
