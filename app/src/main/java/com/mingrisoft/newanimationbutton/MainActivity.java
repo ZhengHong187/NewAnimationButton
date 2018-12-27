@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     
     int height,width,radius;
     
+    int lineHeight;
+    
     int ANIMATION_DURATION = 300;
     
     int startPositionX = 0; //起始位置X
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int whichAnimation = 0;
 
     int NUM_OF_SIDES = 5;
-    int POSITION_CORRECTION = 11;//位置校正;
+    int POSITION_CORRECTION =18;//位置校正;
     
     int[] enterDelay = {80, 120, 160, 40, 0};//进入延迟
     int[] exitDelay = {80, 40, 0, 120, 160};//退出延迟
@@ -46,13 +48,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         height = (int) getResources().getDimension(R.dimen.button_height);
         width = (int) getResources().getDimension(R.dimen.button_width);
         radius = (int) getResources().getDimension(R.dimen.button_radius);
+        lineHeight = (int) getResources().getDimension(R.dimen.button_lineHeight);
         
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(this);
 
-        calculatePentagonVertices(radius, POSITION_CORRECTION);
+//        calculatePentagonVertices(radius, POSITION_CORRECTION);
+        calculateRectangle(lineHeight,POSITION_CORRECTION);
 
     }
+
+    private void calculateRectangle(int lineHeight, int rotation) {
+        pentagonVertices = new Point[NUM_OF_SIDES];
+        
+        
+        for (int i = 0; i < NUM_OF_SIDES; i++) {
+            pentagonVertices[i] = new Point((int) ((rotation   )),
+                    (int) (rotation + lineHeight*i*(-10)) );
+        }
+        buttons = new Button[pentagonVertices.length];
+        for (int i = 0; i < buttons.length; i++) {
+            //Adding button at (0,0) coordinates and setting their visibility to zero
+            buttons[i] = new Button(MainActivity.this);
+            buttons[i].setLayoutParams(new RelativeLayout.LayoutParams(5, 5));
+            buttons[i].setX(0);
+            buttons[i].setY(0);
+            buttons[i].setTag(i);
+            buttons[i].setOnClickListener(this);
+            buttons[i].setVisibility(View.INVISIBLE);
+            buttons[i].setBackgroundResource(R.drawable.circular_background);
+            buttons[i].setTextColor(Color.WHITE);
+            buttons[i].setText(String.valueOf(i + 1));
+            buttons[i].setTextSize(20);
+            /**
+             * Adding those buttons in acitvities layout
+             */
+            ((RelativeLayout) findViewById(R.id.activity_main)).addView(buttons[i]);
+        }
+    }
+
     //设计五角星
     private void calculatePentagonVertices(int radius, int rotation) {
 
@@ -144,9 +178,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     
 
     private void playEnterAnimation(final Button button, int position) {
+       
         AnimatorSet buttonAnimator = new AnimatorSet();
 
-        ValueAnimator buttonAnimatorX = ValueAnimator.ofFloat(startPositionX + button.getLayoutParams().width/2);
+       
+        ValueAnimator buttonAnimatorX = ValueAnimator.ofFloat(startPositionX + button.getLayoutParams().width / 2,
+                pentagonVertices[position].x);
         buttonAnimatorX.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -155,9 +192,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         buttonAnimatorX.setDuration(ANIMATION_DURATION);
-        
-        
-        ValueAnimator buttonAnimatorY = ValueAnimator.ofFloat(startPositionY + 5);
+
+       
+        ValueAnimator buttonAnimatorY = ValueAnimator.ofFloat(startPositionY + 5,
+                pentagonVertices[position].y);
         buttonAnimatorY.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -167,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         buttonAnimatorY.setDuration(ANIMATION_DURATION);
 
-
+      
         ValueAnimator buttonSizeAnimator = ValueAnimator.ofInt(5, width);
         buttonSizeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -179,15 +217,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         buttonSizeAnimator.setDuration(ANIMATION_DURATION);
 
+       
         buttonAnimator.play(buttonAnimatorX).with(buttonAnimatorY).with(buttonSizeAnimator);
         buttonAnimator.setStartDelay(enterDelay[position]);
         buttonAnimator.start();
     }
 
     private void playExitAnimation(final Button button, int position) {
+
+        /**
+         * Animator that animates buttons x and y position simultaneously with size
+         */
         AnimatorSet buttonAnimator = new AnimatorSet();
 
-        ValueAnimator buttonAnimatorX = ValueAnimator.ofFloat(button.getLayoutParams().width / 2,
+        /**
+         * ValueAnimator to update x position of a button
+         */
+        ValueAnimator buttonAnimatorX = ValueAnimator.ofFloat(pentagonVertices[position].x - button.getLayoutParams().width / 2,
                 startPositionX);
         buttonAnimatorX.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -198,8 +244,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         buttonAnimatorX.setDuration(ANIMATION_DURATION);
 
-
-        ValueAnimator buttonAnimatorY = ValueAnimator.ofFloat(startPositionY + 5);
+       
+        ValueAnimator buttonAnimatorY = ValueAnimator.ofFloat(pentagonVertices[position].y,
+                startPositionY + 5);
         buttonAnimatorY.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -209,6 +256,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         buttonAnimatorY.setDuration(ANIMATION_DURATION);
 
+        
         ValueAnimator buttonSizeAnimator = ValueAnimator.ofInt(width, 5);
         buttonSizeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -220,10 +268,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         buttonSizeAnimator.setDuration(ANIMATION_DURATION);
 
+        
         buttonAnimator.play(buttonAnimatorX).with(buttonAnimatorY).with(buttonSizeAnimator);
         buttonAnimator.setStartDelay(exitDelay[position]);
         buttonAnimator.start();
-
     }
 }
 
